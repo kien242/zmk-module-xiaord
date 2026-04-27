@@ -1,0 +1,18 @@
+#include <../boards/shields/seeed_xiao_round_display/seeed_xiao_round_display.overlay>
+
+/ {
+	chosen {
+		zephyr,display = &gc9a01_xiao_round_display;
+		zmk,display-led = &display_backlight;
+	};
+	
+	backlight: node_led {
+		compatible = "gpio-leds";
+		
+		display_backlight: led_0 {
+			/* XIAO BLE D6/TX is nRF52840 P1.11; SW2/KE must connect it to BG_LIGHT. */
+			gpios = <&gpio1 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+			label = "DISPLAY_BACKLIGHT";
+		};
+	};
+};
