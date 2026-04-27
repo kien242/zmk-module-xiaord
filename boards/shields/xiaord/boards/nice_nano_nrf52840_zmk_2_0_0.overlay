@@ -1,13 +1,6 @@
 #include <freq.h>
 #include <zephyr/dt-bindings/display/panel.h>
 
-/ {
-	aliases {
-		rtc = &ds3231_rtc;
-	};
-};
-
-
 /* ==========================================
 1. SPI & DISPLAY CONFIGURATION (GC9A01)
 ========================================== */
@@ -121,6 +114,10 @@
 };
 
 / {
+	aliases {
+		rtc = &ds3231_rtc;
+	};
+
 	chosen {
 		zephyr,touch = &cst816s_round_display_touch;
 	};
