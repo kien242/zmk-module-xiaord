@@ -38,39 +38,39 @@ if(CONFIG_XIAORD_BG_USER_DEFINED)
             if(NOT "${XIAORD_BG_USER_DEFINED_SOURCE}" STREQUAL "")
                 message(STATUS "XIAORD_BG_USER_DEFINED: Found source ${XIAORD_BG_USER_DEFINED_SOURCE}")
                 find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    
+    # 1. Lấy đuôi file
+    get_filename_component(SOURCE_EXT "${XIAORD_BG_USER_DEFINED_SOURCE}" EXT)
+    string(TOLOWER "${SOURCE_EXT}" SOURCE_EXT)
 
-                # KIỂM TRA VÀ CÀI ĐẶT PILLOW TỰ ĐỘNG
-                execute_process(
-                    COMMAND "${Python3_EXECUTABLE}" -c "import PIL"
-                    RESULT_VARIABLE PILLOW_CHECK_RES
-                    OUTPUT_QUIET ERROR_QUIET
-                )
+    # 2. Kiểm tra Pillow (Chỉ khi cần - không phải PNG hoặc muốn chắc chắn)
+    set(NEED_INSTALL_PILLOW FALSE)
+    if(NOT SOURCE_EXT STREQUAL ".png")
+        execute_process(COMMAND "${Python3_EXECUTABLE}" -c "import PIL" RESULT_VARIABLE PIL_FOUND OUTPUT_QUIET ERROR_QUIET)
+        if(NOT PIL_FOUND EQUAL 0)
+            set(NEED_INSTALL_PILLOW TRUE)
+        endif()
+    endif()
 
-                if(NOT PILLOW_CHECK_RES EQUAL 0)
-                    message(STATUS "XIAORD_BG_USER_DEFINED: Pillow not found, attempting to install...")
-                    # Sử dụng --break-system-packages để vượt qua rào cản trên GitHub Actions (Ubuntu 23.04+)
-                    execute_process(
-                        COMMAND "${Python3_EXECUTABLE}" -m pip install pillow --break-system-packages --user
-                        RESULT_VARIABLE PILLOW_INSTALL_RES
-                        ERROR_VARIABLE PILLOW_INSTALL_ERR
-                    )
-                    if(NOT PILLOW_INSTALL_RES EQUAL 0)
-                        message(WARNING "XIAORD_BG_USER_DEFINED: Failed to install Pillow. Error: ${PILLOW_INSTALL_ERR}")
-                    endif()
-                endif()
+    # 3. Kiểm tra PIP trước khi cài
+    if(NEED_INSTALL_PILLOW)
+        execute_process(COMMAND "${Python3_EXECUTABLE}" -m pip --version RESULT_VARIABLE PIP_FOUND OUTPUT_QUIET ERROR_QUIET)
+        if(PIP_FOUND EQUAL 0)
+            message(STATUS "Installing Pillow via pip...")
+            execute_process(COMMAND "${Python3_EXECUTABLE}" -m pip install pillow --user --break-system-packages)
+        else()
+            message(WARNING "Pip not found. Cannot install Pillow. Conversion might fail.")
+        endif()
+    endif()
 
-                # CHẠY SCRIPT CHUYỂN ĐỔI
-                execute_process(
-                    COMMAND
-                        "${Python3_EXECUTABLE}"
-                        "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../tools/convert_xiaord_bg.py"
-                        "${XIAORD_BG_USER_DEFINED_SOURCE}"
-                        "bg_user_defined"
-                        --out-dir "${CMAKE_CURRENT_SOURCE_DIR}/bg"
-                    RESULT_VARIABLE XIAORD_BG_USER_DEFINED_CONVERT_RESULT
-                    ERROR_VARIABLE XIAORD_BG_USER_DEFINED_CONVERT_ERROR
-                    OUTPUT_VARIABLE XIAORD_BG_USER_DEFINED_CONVERT_OUT
-                )
+    # 4. Chạy script chuyển đổi (Bọc trong logic an toàn)
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../tools/convert_xiaord_bg.py"
+                "${XIAORD_BG_USER_DEFINED_SOURCE}" "bg_user_defined" --out-dir "${CMAKE_CURRENT_SOURCE_DIR}/bg"
+        RESULT_VARIABLE CONVERT_RES
+        ERROR_VARIABLE CONVERT_ERR
+        OUTPUT_VARIABLE CONVERT_OUT
+    )
 
                 # Hiển thị log từ Python (bao gồm cả dòng "Successfully generated" màu xanh của bạn)
                 if(NOT "${XIAORD_BG_USER_DEFINED_CONVERT_OUT}" STREQUAL "")
