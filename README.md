@@ -662,7 +662,8 @@ Both processors are defined in `boards/shields/xiaord/zmk_behaviors.dtsi`. `virt
 
 ## Known Limitations / Not Yet Implemented
 
-- Tested on XIAO BLE (nRF52840) and nice!nano (including Chinese clones). Note: For unknown reasons, the nice!nano requires the new bootloader based on SDK 7.3.0 (available in the bootloader folder)
+- Tested on XIAO BLE (nRF52840) and nice!nano (including Chinese clones). 
+        Note: For unknown reasons, the nice!nano requires the new bootloader based on SDK 7.3.0 (available in the bootloader folder)
 - Occasional hang on the date-setting screen
 - Font color options other than white
 - Battery management UI for the XIAO Round Display itself
