@@ -1,87 +1,46 @@
 param(
     [string]$SourceDir = "",
-    [string]$OutDir = "src/display/ui/bg",
-    [switch]$ChooseFolder
+    [string]$OutDir = "src/display/ui/bg"
 )
 
 $ErrorActionPreference = "Stop"
-
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 
-function Get-ImageFiles {
-    param([string]$Path)
-
-    if (-not (Test-Path -LiteralPath $Path)) {
-        return @()
-    }
-
-    return @(Get-ChildItem -LiteralPath $Path |
-        Where-Object { $_.Extension -match '^\.(jpg|jpeg|png)$' } |
-        Sort-Object Name)
-}
-
-function Select-ImageFolder {
-    Add-Type -AssemblyName System.Windows.Forms
-
-    $Dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-    $Dialog.Description = "Choose the folder that contains your background pictures"
-    $Dialog.ShowNewFolderButton = $true
-
-    if ($Dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-        return $Dialog.SelectedPath
-    }
-
-    throw "No picture folder selected."
-}
-
-if ($ChooseFolder) {
-    $SourceDir = Select-ImageFolder
-} elseif ([string]::IsNullOrWhiteSpace($SourceDir)) {
-    $OneDrivePictures = Join-Path $env:USERPROFILE "OneDrive\Pictures\Dongle Pictures"
-    $RepoSourcePictures = Join-Path $RepoRoot "src/display/ui/bg/source"
-
-    if ((Get-ImageFiles $OneDrivePictures).Count -gt 0) {
-        $SourceDir = $OneDrivePictures
-    } elseif ((Get-ImageFiles $RepoSourcePictures).Count -gt 0) {
+# 1. Tự động tìm thư mục chứa ảnh nếu không truyền vào
+if ([string]::IsNullOrWhiteSpace($SourceDir)) {
+    $RepoSourcePictures = Join-Path $RepoRoot "config/xiaord-bg"
+    if (Test-Path $RepoSourcePictures) {
         $SourceDir = $RepoSourcePictures
     } else {
-        Write-Host "No pictures were found in the default folders."
-        Write-Host "A folder picker will open. Choose the folder that contains your JPG or PNG pictures."
-        $SourceDir = Select-ImageFolder
+        throw "Folder 'config/xiaord-bg' not found. Please provide SourceDir."
     }
 }
 
 $SourcePath = Resolve-Path $SourceDir
 $OutPath = Join-Path $RepoRoot $OutDir
 
-$Images = @(Get-ImageFiles $SourcePath | Select-Object -First 1)
+# 2. Tìm chính xác file bg_user_define.png
+$Image = Get-ChildItem -LiteralPath $SourcePath | Where-Object { $_.Name -eq "bg_user_define.png" }
 
-if ($Images.Count -eq 0) {
-    throw "Need at least one JPG/PNG image in $SourcePath"
+if (-not $Image) {
+    throw "Error: 'bg_user_define.png' not found in $SourcePath"
 }
 
+# 3. Đảm bảo Pillow đã được cài đặt
 python -c "import PIL" 2>$null
 if ($LASTEXITCODE -ne 0) {
+    Write-Host "Installing Pillow..."
     python -m pip install --user pillow
 }
 
-$Image = $Images[0]
+# 4. Thực hiện chuyển đổi
+Write-Host "Processing: $($Image.FullName) -> bg_user_define.c"
 
-# Edit these if the main subject needs to move on the round display.
-# center-x: smaller = left, larger = right
-# center-y: smaller = up, larger = down
-# zoom: larger = closer crop
-$CenterX = "0.54"
-$CenterY = "0.50"
-$Zoom = "1.00"
-
-Write-Host "Converting $($Image.Name) -> bg4"
 python (Join-Path $RepoRoot "tools/convert_xiaord_bg.py") `
     $Image.FullName `
-    4 `
-    --center-x $CenterX `
-    --center-y $CenterY `
-    --zoom $Zoom `
-    --out-dir $OutPath
+    --out-dir $OutPath `
+    --center-x "0.54" `
+    --center-y "0.50" `
+    --zoom "1.00"
 
-Write-Host "Done. Converted bg4. Check src/display/ui/bg/bg4.png."
+Write-Host "Success! Firmware will use the new background from bg_user_define.c"

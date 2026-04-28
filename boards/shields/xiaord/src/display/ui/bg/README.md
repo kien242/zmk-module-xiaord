@@ -1,7 +1,7 @@
 # Xiaord Background Images
 
 The built-in backgrounds are compiled from this module. The custom background
-slot, `CONFIG_XIAORD_BG_4`, is generated during the keyboard build from an image
+slot, `CONFIG_XIAORD_BG_USER_DEFINED`, is generated during the keyboard build from an image
 stored in the keyboard config repo.
 
 ## Default Keyboard Repo Layout
@@ -18,7 +18,7 @@ Then enable the custom slot in the keyboard `.conf`:
 CONFIG_XIAORD_BG_1=n
 CONFIG_XIAORD_BG_2=n
 CONFIG_XIAORD_BG_3=n
-CONFIG_XIAORD_BG_4=y
+CONFIG_XIAORD_BG_USER_DEFINED=y
 ```
 
 If the folder has more than one image, the first filename in sorted order is
@@ -40,8 +40,8 @@ If the image is meant to be public, the keyboard config repo can be public.
 To use a different folder inside the keyboard config repo:
 
 ```conf
-CONFIG_XIAORD_BG_4=y
-CONFIG_XIAORD_BG_4_SOURCE_DIR="my-background-folder"
+CONFIG_XIAORD_BG_USER_DEFINED=y
+CONFIG_XIAORD_BG_USER_DEFINED_SOURCE_DIR="my-background-folder"
 ```
 
 Relative paths are resolved from the keyboard config repo.
@@ -55,14 +55,14 @@ instead of compiling photos into the firmware:
 CONFIG_XIAORD_BG_1=y
 CONFIG_XIAORD_BG_2=n
 CONFIG_XIAORD_BG_3=n
-CONFIG_XIAORD_BG_4=n
+CONFIG_XIAORD_BG_USER_DEFINED=n
 CONFIG_XIAORD_BG_SD=y
 CONFIG_XIAORD_BG_SD_VOLUME_NAME="SD"
 CONFIG_XIAORD_BG_SD_ROTATE_MS=60000
 CONFIG_XIAORD_BG_SD_RETRY_MS=5000
 ```
 
-Keep one compiled background enabled as the fallback. Use `BG_4=y` instead of
+Keep one compiled background enabled as the fallback. Use `BG_USER_DEFINED=y` instead of
 `BG_1=y` if you want your custom compiled image as the fallback.
 
 Prepare the card with:

@@ -18,7 +18,7 @@ Then enable the custom slot in the keyboard `.conf`:
 CONFIG_XIAORD_BG_1=n
 CONFIG_XIAORD_BG_2=n
 CONFIG_XIAORD_BG_3=n
-CONFIG_XIAORD_BG_4=y
+CONFIG_XIAORD_BG_USER_DEFINED=y
 ```
 
 The default ZMK GitHub Actions checkout places the keyboard config at
@@ -43,9 +43,9 @@ have. If the image is missing or conversion fails, the build falls back to
 In the build log, look for lines like:
 
 ```text
-XIAORD_BG_4: looking for background image in /tmp/zmk-config/config/xiaord-bg
-XIAORD_BG_4: converting /tmp/zmk-config/config/xiaord-bg/01-background.png
-XIAORD_BG_4: generated .../src/display/ui/bg/bg4.c
+XIAORD_BG_USER_DEFINED: looking for background image in /tmp/zmk-config/config/xiaord-bg
+XIAORD_BG_USER_DEFINED: converting /tmp/zmk-config/config/xiaord-bg/01-background.png
+XIAORD_BG_USER_DEFINED: generated .../src/display/ui/bg/bg_user_define.c
 ```
 
 ## Privacy
@@ -60,8 +60,8 @@ not private, the keyboard config repo can be public.
 To use a different folder in the keyboard config repo:
 
 ```conf
-CONFIG_XIAORD_BG_4=y
-CONFIG_XIAORD_BG_4_SOURCE_DIR="my-background-folder"
+CONFIG_XIAORD_BG_USER_DEFINED=y
+CONFIG_XIAORD_BG_USER_DEFINED_SOURCE_DIR="my-background-folder"
 ```
 
 Relative paths are resolved from the keyboard config repo.
@@ -69,8 +69,8 @@ Relative paths are resolved from the keyboard config repo.
 For a local Windows-only build, an absolute path also works:
 
 ```conf
-CONFIG_XIAORD_BG_4=y
-CONFIG_XIAORD_BG_4_SOURCE_DIR="C:/Path/To/Dongle Backgrounds"
+CONFIG_XIAORD_BG_USER_DEFINED=y
+CONFIG_XIAORD_BG_USER_DEFINED_SOURCE_DIR="C:/Path/To/Dongle Backgrounds"
 ```
 
 ## Preview Or Convert Manually
@@ -84,11 +84,11 @@ powershell -ExecutionPolicy Bypass -File tools/convert_backgrounds.ps1 -SourceDi
 The converter writes ignored local files:
 
 ```text
-src/display/ui/bg/bg4.png
-src/display/ui/bg/bg4.c
+src/display/ui/bg/bg_user_define.png
+src/display/ui/bg/bg_user_define.c
 ```
 
-Open `bg4.png` to check the crop. Do not commit these generated files if they
+Open `bg_user_define.png` to check the crop. Do not commit these generated files if they
 contain a private image.
 
 To convert one image directly:
@@ -121,7 +121,7 @@ $Zoom = "1.00"
 ## Preparing a microSD Card
 
 Use `xiaord_sd_backgrounds.py` when you want many runtime backgrounds on the
-XIAO Round Display microSD card instead of one compiled `BG_4` image.
+XIAO Round Display microSD card instead of one compiled `BG_USER_DEFINED` image.
 
 You can use a local clone of this module, or download only these files into one
 folder:
@@ -162,13 +162,13 @@ The firmware expects the converted files in `/SD:/xiaord-bg/converted` when
 `CONFIG_XIAORD_BG_SD=y`.
 
 Keep one compiled background enabled as a fallback. For example, this uses SD
-backgrounds when available and falls back to `BG_4`:
+backgrounds when available and falls back to `BG_USER_DEFINED`:
 
 ```conf
 CONFIG_XIAORD_BG_1=n
 CONFIG_XIAORD_BG_2=n
 CONFIG_XIAORD_BG_3=n
-CONFIG_XIAORD_BG_4=y
+CONFIG_XIAORD_BG_USER_DEFINED=y
 CONFIG_XIAORD_BG_SD=y
 CONFIG_XIAORD_BG_SD_VOLUME_NAME="SD"
 CONFIG_XIAORD_BG_SD_RETRY_MS=5000

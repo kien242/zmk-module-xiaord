@@ -278,8 +278,8 @@ These are the Xiaord-specific options you can use in your keyboard `.conf` or
 | `CONFIG_XIAORD_BG_1` | `y` if no other compiled background is selected | Use built-in background 1. |
 | `CONFIG_XIAORD_BG_2` | `n` | Use built-in background 2. |
 | `CONFIG_XIAORD_BG_3` | `n` | Use built-in background 3. |
-| `CONFIG_XIAORD_BG_4` | `n` | Generate and use one custom background from your keyboard config repo. |
-| `CONFIG_XIAORD_BG_4_SOURCE_DIR` | `""` | Folder containing JPG/PNG source images for `BG_4`. Relative paths are resolved from the keyboard config repo. Empty means use `config/xiaord-bg`, the `XIAORD_BG_4_SOURCE_DIR` environment variable, or fall back to `BG_1`. |
+| `CONFIG_XIAORD_BG_USER_DEFINED` | `n` | Generate and use one custom background from your keyboard config repo. |
+| `CONFIG_XIAORD_BG_USER_DEFINED_SOURCE_DIR` | `""` | Folder containing JPG/PNG source images for `BG_USER_DEFINED`. Relative paths are resolved from the keyboard config repo. Empty means use `config/xiaord-bg`, the `XIAORD_BG_USER_DEFINED_SOURCE_DIR` environment variable, or fall back to `BG_1`. |
 | `CONFIG_XIAORD_BG_SD` | `n` | Load runtime backgrounds from the microSD card instead of compiling every photo into firmware. A compiled background should still be enabled as a fallback. |
 | `CONFIG_XIAORD_BG_SD_MOUNT_POINT` | `"/SD:"` | Filesystem mount point for the SD card. |
 | `CONFIG_XIAORD_BG_SD_VOLUME_NAME` | `"SD"` | Disk name registered by the board's SD/MMC driver. The Seeed XIAO Round Display normally uses `SD`. |
@@ -288,8 +288,6 @@ These are the Xiaord-specific options you can use in your keyboard `.conf` or
 | `CONFIG_XIAORD_BG_SD_ROTATE_MS` | `0` | Auto-advance SD backgrounds after this many milliseconds. `0` disables auto-rotation. |
 | `CONFIG_XIAORD_BG_SD_RETRY_MS` | `5000` | Retry SD-card mounting after boot if the card is not ready. `0` disables retrying. |
 | `CONFIG_XIAORD_BG_SD_GESTURES` | `y` when SD backgrounds are enabled | Use slide gestures to control SD backgrounds instead of firing the normal slide bindings. |
-| `CONFIG_XIAORD_BG_5` | `n` | Deprecated compatibility option. Accepted so old configs still parse; custom backgrounds now use `BG_4`. |
-| `CONFIG_XIAORD_BG_6` | `n` | Deprecated compatibility option. Accepted so old configs still parse; custom backgrounds now use `BG_4`. |
 | `CONFIG_XIAORD_REMOVE_DATE_TIME` | `n` | Start the home screen with date/time hidden. The widgets are still available and can be toggled with `&xiaord_home_datetime`. |
 | `CONFIG_XIAORD_DOUBLE_TAP_MS` | `450` | Maximum time between center taps for a double tap. Increase it if double-tap feels too hard. |
 | `CONFIG_XIAORD_GESTURE_ROTATION_JITTER_CROSS` | `120` | Ignore tiny circular-motion samples below this value. Increase it if touch noise triggers rotation. |
@@ -417,10 +415,10 @@ Original backgrounds and one keyboard-repo custom photo background are available
 | `CONFIG_XIAORD_BG_1=y` | ![bg1](src/display/ui/bg/bg1.png) |
 | `CONFIG_XIAORD_BG_2=y` | ![bg2](src/display/ui/bg/bg2.png) |
 | `CONFIG_XIAORD_BG_3=y` | ![bg3](src/display/ui/bg/bg3.png) |
-| `CONFIG_XIAORD_BG_4=y` | First image in your keyboard repo's `config/xiaord-bg` folder |
+| `CONFIG_XIAORD_BG_USER_DEFINED=y` | First image in your keyboard repo's `config/xiaord-bg` folder |
 | `CONFIG_XIAORD_BG_SD=y` | Runtime backgrounds from the microSD card |
 
-The nRF52840 build reliably fits one full-size photo background. `BG_4` is generated during the keyboard build and is not stored in this module. If `CONFIG_XIAORD_BG_4=y` but no image can be found or generated, the firmware falls back to `BG_1` and still compiles.
+The nRF52840 build reliably fits one full-size photo background. `BG_USER_DEFINED` is generated during the keyboard build and is not stored in this module. If `CONFIG_XIAORD_BG_USER_DEFINED=y` but no image can be found or generated, the firmware falls back to `BG_1` and still compiles.
 
 For the default GitHub Actions ZMK workflow, put one PNG in your keyboard config repo:
 
@@ -428,10 +426,10 @@ For the default GitHub Actions ZMK workflow, put one PNG in your keyboard config
 config/xiaord-bg/01-background.png
 ```
 
-Then enable `BG_4`:
+Then enable `BG_USER_DEFINED`:
 
 ```conf
-CONFIG_XIAORD_BG_4=y
+CONFIG_XIAORD_BG_USER_DEFINED=y
 ```
 
 If the picture is private or sensitive, keep your keyboard config repo private.
@@ -444,8 +442,8 @@ Pillow, which the default runner may not have.
 If you want to use a different folder inside the keyboard config repo, set a relative path:
 
 ```conf
-CONFIG_XIAORD_BG_4=y
-CONFIG_XIAORD_BG_4_SOURCE_DIR="my-background-folder"
+CONFIG_XIAORD_BG_USER_DEFINED=y
+CONFIG_XIAORD_BG_USER_DEFINED_SOURCE_DIR="my-background-folder"
 ```
 
 To start with the home screen date and time hidden for cleaner custom
@@ -462,7 +460,7 @@ reset the clock when changing backgrounds.
 
 ### SD Card Backgrounds
 
-SD card backgrounds keep the existing `BG_1` through `BG_4` options intact, but
+SD card backgrounds keep the existing `BG_1` through `BG_USER_DEFINED` options intact, but
 move photo storage out of the firmware. Enable SD mode in the dongle `.conf`
 and leave one compiled background enabled as the fallback:
 
@@ -470,7 +468,7 @@ and leave one compiled background enabled as the fallback:
 CONFIG_XIAORD_BG_1=y
 CONFIG_XIAORD_BG_2=n
 CONFIG_XIAORD_BG_3=n
-CONFIG_XIAORD_BG_4=n
+CONFIG_XIAORD_BG_USER_DEFINED=n
 CONFIG_XIAORD_BG_SD=y
 
 # Default for the Seeed XIAO Round Display SD disk.
@@ -537,13 +535,13 @@ Files are scanned in numeric filename order. `bg001.rgb565` is shown first, then
 missing, the mount fails, or no converted files are found, the firmware falls
 back to whichever compiled background option is enabled.
 
-For example, this uses SD backgrounds when available and `BG_4` as the fallback:
+For example, this uses SD backgrounds when available and `BG_USER_DEFINED` as the fallback:
 
 ```conf
 CONFIG_XIAORD_BG_1=n
 CONFIG_XIAORD_BG_2=n
 CONFIG_XIAORD_BG_3=n
-CONFIG_XIAORD_BG_4=y
+CONFIG_XIAORD_BG_USER_DEFINED=y
 CONFIG_XIAORD_BG_SD=y
 ```
 

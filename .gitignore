@@ -3,8 +3,8 @@ __pycache__/
 *.pyc
 
 # Locally generated custom background. Keep personal photos out of the public repo.
-/src/display/ui/bg/bg4.c
-/src/display/ui/bg/bg4.png
+/src/display/ui/bg/bg_user_define.c
+/src/display/ui/bg/bg_user_define.png
 /src/display/ui/bg/bg5.c
 /src/display/ui/bg/bg5.png
 /src/display/ui/bg/bg6.c

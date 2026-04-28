@@ -7,7 +7,7 @@ Date: 2026-04-14
 The dongle display now supports custom photo backgrounds. The intent is:
 
 - Keep the original 3 backgrounds available as single/static options.
-- Add custom backgrounds `BG_4`, `BG_5`, and `BG_6`.
+- Add custom backgrounds `BG_USER_DEFINED`.
 - Use one static compile-time background; auto-rotation was removed after one photo was confirmed working.
 - Avoid compiling too many 240x240 RGB565 images because flash space is tight.
 
@@ -52,16 +52,14 @@ In the keyboard repo config, use this build-safe setup for one custom picture:
 CONFIG_XIAORD_BG_1=n
 CONFIG_XIAORD_BG_2=n
 CONFIG_XIAORD_BG_3=n
-CONFIG_XIAORD_BG_4=y
-CONFIG_XIAORD_BG_5=n
-CONFIG_XIAORD_BG_6=n
+CONFIG_XIAORD_BG_USER_DEFINED=y
 ```
 
 After commit `b8b9da6`, the build should ignore original backgrounds if a stale config still sets `CONFIG_XIAORD_BG_1=y`, but it is cleaner to set it to `n` explicitly.
 
 ## Confirmed Working
 
-After setting only one custom image to `y`, the GitHub build and UF2 worked. Keep `BG_5` and `BG_6` in the module as available options, but only enable one full-size photo background at once unless image storage is optimized later.
+After setting only one custom image to `y`, the GitHub build and UF2 worked. 
 
 ## UF2 Flashing / Bootloader Notes
 
@@ -85,14 +83,13 @@ Suggested one-photo config:
 CONFIG_XIAORD_BG_1=n
 CONFIG_XIAORD_BG_2=n
 CONFIG_XIAORD_BG_3=n
-CONFIG_XIAORD_BG_4=y
-CONFIG_XIAORD_BG_5=n
-CONFIG_XIAORD_BG_6=n
+CONFIG_XIAORD_BG_USER_DEFINED=y
+
 ```
 
 ## Rotation Removed
 
-Auto-rotating backgrounds were removed after confirming one picture works. The module now uses a single static compile-time background. If more than one `CONFIG_XIAORD_BG_*` option is accidentally enabled, it picks the first available image in this priority: `BG_4`, `BG_5`, `BG_6`, then `BG_1`, `BG_2`, `BG_3`.
+Auto-rotating backgrounds were removed after confirming one picture works. The module now uses a single static compile-time background. If more than one `CONFIG_XIAORD_BG_*` option is accidentally enabled, it picks the first available image in this priority: `BG_USER_DEFINED`, then `BG_1`, `BG_2`, `BG_3`.
 
 ## Date/Time Overlay Option
 
@@ -102,7 +99,7 @@ Added `CONFIG_XIAORD_REMOVE_DATE_TIME=y` to remove the date and time labels from
 
 Added planned runtime SD-card background support:
 
-- `CONFIG_XIAORD_BG_SD=y` loads one active `bgNNN.rgb565` file from the SD card and falls back to whichever compiled `BG_1`/`BG_2`/`BG_3`/`BG_4` option is enabled.
+- `CONFIG_XIAORD_BG_SD=y` loads one active `bgNNN.rgb565` file from the SD card and falls back to whichever compiled `BG_1`/`BG_2`/`BG_3`/`BG_USER_DEFINED` option is enabled.
 - `CONFIG_XIAORD_BG_SD_ROTATE_MS=<ms>` rotates through converted SD backgrounds automatically. `0` disables auto-rotation.
 - `CONFIG_XIAORD_BG_SD_GESTURES=y` lets slide left/right cycle previous/next SD background instead of sending normal left/right gesture bindings.
 - Default SD path is `/SD:/xiaord-bg/converted`.
