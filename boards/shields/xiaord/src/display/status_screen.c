@@ -739,11 +739,11 @@ static void xiaord_initialize_color_theme(void) {
   const struct device *display_dev =
       DEVICE_DT_GET_OR_NULL(DT_CHOSEN(zephyr_display));
   if (display_dev && device_is_ready(display_dev)) {
-    display_set_orientation(display_dev, DISPLAY_ORIENTATION_ROTATED_270);
+    display_set_orientation(display_dev, CONFIG_XIAORD_DISPLAY_ROTATE);
   }
 
   /* Touch coordinate transformation via LVGL rotation. */
-  lv_display_set_rotation(disp, LV_DISPLAY_ROTATION_270);
+  lv_display_set_rotation(disp, CONFIG_XIAORD_DISPLAY_ROTATE);
 
   lv_theme_t *theme = lv_theme_default_init(
       disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_TEAL),
