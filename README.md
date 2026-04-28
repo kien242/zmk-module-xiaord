@@ -412,10 +412,10 @@ Original backgrounds and one keyboard-repo custom photo background are available
 
 | Setting | Preview |
 |---------|---------|
-| `CONFIG_XIAORD_BG_1=y` | ![bg1](src/display/ui/bg/bg1.png) |
-| `CONFIG_XIAORD_BG_2=y` | ![bg2](src/display/ui/bg/bg2.png) |
-| `CONFIG_XIAORD_BG_3=y` | ![bg3](src/display/ui/bg/bg3.png) |
-| `CONFIG_XIAORD_BG_USER_DEFINED=y` | First image in your keyboard repo's `config/xiaord-bg` folder |
+| `CONFIG_XIAORD_BG_1=y` | ![bg1](boards/shields/xiaord/src/display/ui/bg/bg1.png) |
+| `CONFIG_XIAORD_BG_2=y` | ![bg2](boards/shields/xiaord/src/display/ui/bg/bg2.png) |
+| `CONFIG_XIAORD_BG_3=y` | ![bg3](boards/shields/xiaord/src/display/ui/bg/bg3.png) |
+| `CONFIG_XIAORD_BG_USER_DEFINED=y` | Use bg_user_defined.png in config/xiaord-bg/ as the keyboard background |
 | `CONFIG_XIAORD_BG_SD=y` | Runtime backgrounds from the microSD card |
 
 The nRF52840 build reliably fits one full-size photo background. `BG_USER_DEFINED` is generated during the keyboard build and is not stored in this module. If `CONFIG_XIAORD_BG_USER_DEFINED=y` but no image can be found or generated, the firmware falls back to `BG_1` and still compiles.
@@ -423,7 +423,7 @@ The nRF52840 build reliably fits one full-size photo background. `BG_USER_DEFINE
 For the default GitHub Actions ZMK workflow, put one PNG in your keyboard config repo:
 
 ```text
-config/xiaord-bg/01-background.png
+config/xiaord-bg/bg_user_defined.png
 ```
 
 Then enable `BG_USER_DEFINED`:
@@ -662,7 +662,9 @@ Both processors are defined in `boards/shields/xiaord/zmk_behaviors.dtsi`. `virt
 
 ## Known Limitations / Not Yet Implemented
 
-- Only tested on XIAO BLE (nRF52840)
+- Tested on XIAO BLE (nRF52840) and nice!nano (including Chinese clones). 
+        Note: For unknown reasons, the nice!nano requires the new bootloader based on SDK 7.3.0 (available in the bootloader folder)
 - Occasional hang on the date-setting screen
 - Font color options other than white
 - Battery management UI for the XIAO Round Display itself
+
