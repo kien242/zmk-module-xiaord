@@ -15,6 +15,7 @@ function Get-ImageFiles {
         return @()
     }
 
+    # Sửa để tìm đúng file đích bg_user_defined
     return @(Get-ChildItem -LiteralPath $Path |
         Where-Object { $_.Name -match '^bg_user_defined\.(jpg|jpeg|png)$' } |
         Sort-Object Name)
@@ -45,6 +46,8 @@ if ($ChooseFolder) {
     } elseif ((Get-ImageFiles $RepoSourcePictures).Count -gt 0) {
         $SourceDir = $RepoSourcePictures
     } else {
+        Write-Host "No pictures were found in the default folders."
+        Write-Host "A folder picker will open. Choose the folder that contains your bg_user_defined file."
         $SourceDir = Select-ImageFolder
     }
 }
@@ -55,15 +58,18 @@ $OutPath = Join-Path $RepoRoot $OutDir
 $Images = @(Get-ImageFiles $SourcePath | Select-Object -First 1)
 
 if ($Images.Count -eq 0) {
-    throw "Need a file named bg_user_defined.png/jpg in $SourcePath"
+    throw "Need a file named 'bg_user_defined.png' or 'bg_user_defined.jpg' in $SourcePath"
 }
 
+# Tự động cài Pillow trên máy local nếu thiếu
 python -c "import PIL" 2>$null
 if ($LASTEXITCODE -ne 0) {
     python -m pip install --user pillow
 }
 
 $Image = $Images[0]
+
+# Các thông số căn chỉnh ảnh
 $CenterX = "0.50"
 $CenterY = "0.50"
 $Zoom = "1.00"
@@ -72,6 +78,9 @@ Write-Host "Converting $($Image.Name) -> bg_user_defined"
 python (Join-Path $RepoRoot "tools/convert_xiaord_bg.py") `
     $Image.FullName `
     "user_defined" `
+    --center-x $CenterX `
+    --center-y $CenterY `
+    --zoom $Zoom `
     --out-dir $OutPath
 
 Write-Host "Done. Check src/display/ui/bg/bg_user_defined.c"
