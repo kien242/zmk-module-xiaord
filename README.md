@@ -275,12 +275,8 @@ These are the Xiaord-specific options you can use in your keyboard `.conf` or
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `CONFIG_XIAORD_DISPLAY_ROTATE` | `0` | Set the logical software rotation of the display:
-      - 0: 0°
-      - 1: 90°
-      - 2: 180°
-      - 3: 270°|
-| `CONFIG_XIAORD_BG_1` | `y` if no other compiled background is selected | Use built-in background 1. |
+| `CONFIG_XIAORD_DISPLAY_ROTATE` | `0` | Set the logical software rotation of the display 0: 0°; 1: 90°; 2: 180°; 3: 270°|
+| `CONFIG_XIAORD_BG_1` | `y` |if no other compiled background is selected | Use built-in background 1. |
 | `CONFIG_XIAORD_BG_2` | `n` | Use built-in background 2. |
 | `CONFIG_XIAORD_BG_3` | `n` | Use built-in background 3. |
 | `CONFIG_XIAORD_BG_USER_DEFINED` | `n` | Generate and use one custom background from your keyboard config repo. |
