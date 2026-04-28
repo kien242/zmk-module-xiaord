@@ -4,3 +4,4 @@ __pycache__/
 
 # Locally generated custom background. Keep personal photos out of the public repo.
 bg_user_defined.c
+bg_user_defined.png
