@@ -7,7 +7,7 @@ if(CONFIG_XIAORD_BG_USER_DEFINED)
     set(XIAORD_BG_USER_DEFINED_C "${CMAKE_CURRENT_SOURCE_DIR}/bg/bg_user_defined.c")
     set(XIAORD_BG_USER_DEFINED_SOURCE_DIR_EFFECTIVE "${CONFIG_XIAORD_BG_USER_DEFINED_SOURCE_DIR}")
 
-    # --- Logic xác định thư mục nguồn ---
+    # --- Logic xác định thư mục nguồn ảnh ---
     if("${XIAORD_BG_USER_DEFINED_SOURCE_DIR_EFFECTIVE}" STREQUAL "" AND NOT "$ENV{XIAORD_BG_USER_DEFINED_SOURCE_DIR}" STREQUAL "")
         set(XIAORD_BG_USER_DEFINED_SOURCE_DIR_EFFECTIVE "$ENV{XIAORD_BG_USER_DEFINED_SOURCE_DIR}")
     endif()
@@ -39,50 +39,45 @@ if(CONFIG_XIAORD_BG_USER_DEFINED)
                 message(STATUS "XIAORD_BG_USER_DEFINED: Found source ${XIAORD_BG_USER_DEFINED_SOURCE}")
                 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
-                # 1. Lấy đuôi file
-                get_filename_component(SOURCE_EXT "${XIAORD_BG_USER_DEFINED_SOURCE}" EXT)
-                string(TOLOWER "${SOURCE_EXT}" SOURCE_EXT)
+                # KIỂM TRA VÀ CÀI ĐẶT PILLOW TRỰC TIẾP TỪ CMAKE
+                # Bước 1: Kiểm tra xem Pillow đã có chưa
+                execute_process(
+                    COMMAND "${Python3_EXECUTABLE}" -c "import PIL"
+                    RESULT_VARIABLE PILLOW_CHECK_RES
+                    OUTPUT_QUIET ERROR_QUIET
+                )
 
-                # 2. Kiểm tra Pillow (Chỉ khi cần - không phải PNG hoặc muốn chắc chắn)
-                set(NEED_INSTALL_PILLOW FALSE)
-                if(NOT SOURCE_EXT STREQUAL ".png")
-                    execute_process(COMMAND "${Python3_EXECUTABLE}" -c "import PIL" RESULT_VARIABLE PIL_FOUND OUTPUT_QUIET ERROR_QUIET)
-                    if(NOT PIL_FOUND EQUAL 0)
-                        set(NEED_INSTALL_PILLOW TRUE)
-                    endif()
-                endif()
-
-                # 3. Kiểm tra và cài đặt PIP/Pillow (Bổ sung ensurepip để cứu GitHub Actions)
-                if(NEED_INSTALL_PILLOW)
-                    execute_process(COMMAND "${Python3_EXECUTABLE}" -m pip --version RESULT_VARIABLE PIP_FOUND OUTPUT_QUIET ERROR_QUIET)
+                if(NOT PILLOW_CHECK_RES EQUAL 0)
+                    message(STATUS "XIAORD_BG_USER_DEFINED: Pillow not found, attempting to install...")
                     
-                    if(NOT PIP_FOUND EQUAL 0)
-                        message(STATUS "XIAORD_BG_USER_DEFINED: Pip not found. Attempting to bootstrap with ensurepip...")
-                        execute_process(COMMAND "${Python3_EXECUTABLE}" -m ensurepip --user OUTPUT_QUIET ERROR_QUIET)
-                    endif()
-
-                    message(STATUS "XIAORD_BG_USER_DEFINED: Installing Pillow via pip...")
+                    # Thử dùng ensurepip trước đề phòng môi trường không có pip
+                    execute_process(COMMAND "${Python3_EXECUTABLE}" -m ensurepip --user OUTPUT_QUIET ERROR_QUIET)
+                    
+                    # Cài đặt Pillow với các cờ đặc biệt cho GitHub Actions (Ubuntu)
                     execute_process(
                         COMMAND "${Python3_EXECUTABLE}" -m pip install pillow --user --break-system-packages
-                        RESULT_VARIABLE PILLOW_INST_RES
-                        ERROR_VARIABLE PILLOW_INST_ERR
+                        RESULT_VARIABLE PILLOW_INSTALL_RES
+                        ERROR_VARIABLE PILLOW_INSTALL_ERR
                     )
                     
-                    if(NOT PILLOW_INST_RES EQUAL 0)
-                        message(WARNING "XIAORD_BG_USER_DEFINED: Pip found but installation failed: ${PILLOW_INST_ERR}")
+                    if(NOT PILLOW_INSTALL_RES EQUAL 0)
+                        message(WARNING "XIAORD_BG_USER_DEFINED: Pillow install failed: ${PILLOW_INSTALL_ERR}")
                     endif()
                 endif()
 
-                # 4. Chạy script chuyển đổi (Đã đồng bộ hóa tên biến để hiển thị log màu xanh)
+                # CHẠY SCRIPT CHUYỂN ĐỔI
                 execute_process(
-                    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../tools/convert_xiaord_bg.py"
-                            "${XIAORD_BG_USER_DEFINED_SOURCE}" "bg_user_defined" --out-dir "${CMAKE_CURRENT_SOURCE_DIR}/bg"
+                    COMMAND
+                        "${Python3_EXECUTABLE}"
+                        "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../tools/convert_xiaord_bg.py"
+                        "${XIAORD_BG_USER_DEFINED_SOURCE}"
+                        "user_defined"
+                        --out-dir "${CMAKE_CURRENT_SOURCE_DIR}/bg"
                     RESULT_VARIABLE XIAORD_BG_USER_DEFINED_CONVERT_RESULT
                     ERROR_VARIABLE XIAORD_BG_USER_DEFINED_CONVERT_ERROR
                     OUTPUT_VARIABLE XIAORD_BG_USER_DEFINED_CONVERT_OUT
                 )
 
-                # Hiển thị log từ Python (bao gồm cả dòng "Successfully generated" màu xanh của bạn)
                 if(NOT "${XIAORD_BG_USER_DEFINED_CONVERT_OUT}" STREQUAL "")
                     message(STATUS "${XIAORD_BG_USER_DEFINED_CONVERT_OUT}")
                 endif()
