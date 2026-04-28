@@ -420,7 +420,7 @@ Original backgrounds and one keyboard-repo custom photo background are available
 
 The nRF52840 build reliably fits one full-size photo background. `BG_USER_DEFINED` is generated during the keyboard build and is not stored in this module. If `CONFIG_XIAORD_BG_USER_DEFINED=y` but no image can be found or generated, the firmware falls back to `BG_1` and still compiles.
 
-For the default GitHub Actions ZMK workflow, put one PNG in your keyboard config repo:
+To use the default GitHub Actions ZMK workflow, place a PNG image in your keyboard config repo and rename it to bg_user_defined.png
 
 ```text
 config/xiaord-bg/bg_user_defined.png
