@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Convert a photo into a Xiaord 240x240 LVGL RGB565 background.
-This script reads the source image and generates a .c file for firmware.
+Updated to support CMake auto-build and custom manual conversion.
 """
 
 from __future__ import annotations
@@ -33,54 +33,34 @@ def rgb565_bytes(pixels: list[tuple[int, int, int]]) -> bytes:
         out.append((value >> 8) & 0xFF)
     return bytes(out)
 
-def read_png_rgb(path: Path) -> tuple[int, int, list[tuple[int, int, int]]]:
-    data = path.read_bytes()
-    if not data.startswith(PNG_SIG):
-        raise ValueError("Not a PNG file")
-    pos = len(PNG_SIG)
-    width = height = idat = None
-    while pos < len(data):
-        length = struct.unpack(">I", data[pos : pos + 4])[0]
-        pos += 4
-        chunk_type = data[pos : pos + 4]
-        pos += 4
-        chunk = data[pos : pos + length]
-        pos += length + 4
-        if chunk_type == b"IHDR":
-            width, height = struct.unpack(">II", chunk[:8])
-        elif chunk_type == b"IDAT":
-            idat = (idat or bytearray()) + chunk
-        elif chunk_type == b"IEND":
-            break
-    # Simplified PNG reader (expects 8-bit RGB/RGBA)
-    raw = zlib.decompress(idat)
-    pixels = []
-    # Note: This is a basic parser. For full compatibility, Pillow is recommended.
-    # Logic simplified for brevity in this final version.
-    return width, height, [] 
-
 def write_c_file(path: Path, bg_id: str, data: bytes) -> None:
-    clean_id = str(bg_id).replace("-", "_").lower()
-    # Đảm bảo symbol không bị lặp img_bg_bg_
-    core_id = clean_id[3:] if clean_id.startswith("bg_") else clean_id
+    # Đã sửa: Đồng bộ tên biến và cấu trúc theo chuẩn 'defined'
+    clean_id = "bg_user_defined"
     
-    symbol = f"bg_{core_id}_map"
-    img = f"img_bg_{core_id}"
+    symbol = f"{clean_id}_map"
+    img = f"img_{clean_id}"
 
     lines = [
         "#include \"lvgl.h\"",
         "",
-        f"const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST uint8_t {symbol}[] = {{",
+        "#ifndef LV_ATTRIBUTE_MEM_ALIGN",
+        "#define LV_ATTRIBUTE_MEM_ALIGN",
+        "#endif",
+        "",
+        f"const LV_ATTRIBUTE_MEM_ALIGN uint8_t {symbol}[] = {{",
     ]
     for i in range(0, len(data), 16):
-        lines.append("  " + ", ".join(f"0x{b:02x}" for b in data[i : i + 16]) + ",")
+        chunk = data[i : i + 16]
+        lines.append("  " + ", ".join(f"0x{b:02x}" for b in chunk) + ",")
     lines.extend([
         "};", "",
         f"const lv_image_dsc_t {img} = {{",
         "  .header.cf = LV_COLOR_FORMAT_RGB565,",
         "  .header.magic = LV_IMAGE_HEADER_MAGIC,",
-        f"  .header.w = {SIZE}, .header.h = {SIZE},",
-        f"  .data_size = {len(data)}, .data = {symbol},",
+        f"  .header.w = {SIZE},",
+        f"  .header.h = {SIZE},",
+        f"  .data_size = {len(data)},",
+        f"  .data = {symbol},",
         "};"
     ])
     path.write_text("\n".join(lines), encoding="utf-8")
@@ -90,28 +70,40 @@ def convert_with_pillow(source: Path, center_x: float, center_y: float, zoom: fl
         from PIL import Image, ImageOps
         img = Image.open(source).convert("RGB")
         img = ImageOps.exif_transpose(img)
-        left, top, size = crop_square_box(img.size[0], img.size[1], center_x, center_y, zoom)
+        w, h = img.size
+        left, top, size = crop_square_box(w, h, center_x, center_y, zoom)
         final = img.crop((left, top, left + size, top + size)).resize((SIZE, SIZE), 3)
         return list(final.getdata())
-    except: return None
+    except Exception as e:
+        print(f"Pillow conversion failed: {e}")
+        return None
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("source", type=Path)
-    parser.add_argument("--out-dir", type=Path, default=Path("boards/xiaord/src/display/ui/bg"))
+    parser = argparse.ArgumentParser(description="Convert photo to Xiaord background")
+    parser.add_argument("source", type=Path, help="Path to bg_user_defined.png")
+    # bg_id là tham số tùy chọn để "nuốt" số 4 từ CMake truyền vào mà không gây lỗi
+    parser.add_argument("bg_id", type=str, nargs="?", default="bg_user_defined")
+    parser.add_argument("--out-dir", type=Path, default=Path("src/display/ui/bg"))
     parser.add_argument("--center-x", type=float, default=0.5)
     parser.add_argument("--center-y", type=float, default=0.5)
     parser.add_argument("--zoom", type=float, default=1.0)
     args = parser.parse_args()
 
+    if not args.source.exists():
+        raise FileNotFoundError(f"Source file not found: {args.source}")
+
     pixels = convert_with_pillow(args.source, args.center_x, args.center_y, args.zoom)
-    if not pixels: raise RuntimeError("Pillow required for this conversion.")
+    if not pixels:
+        raise RuntimeError("Pillow is required for this conversion. Install it with: pip install pillow")
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    c_path = args.out_dir / f"{args.source.stem}.c"
     
-    write_c_file(c_path, args.source.stem, rgb565_bytes(pixels))
-    print(f"Generated {c_path}")
+    # Đã sửa: Tên file xuất ra là bg_user_defined.c
+    c_path = args.out_dir / "bg_user_defined.c"
+    
+    # Gọi hàm ghi file với ID chuẩn
+    write_c_file(c_path, "bg_user_defined", rgb565_bytes(pixels))
+    print(f"-- Successfully generated: {c_path}")
 
 if __name__ == "__main__":
     main()

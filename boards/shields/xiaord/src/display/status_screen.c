@@ -55,9 +55,9 @@ static const struct gpio_dt_spec status_backlight_gpio =
 #endif
 
 #if IS_ENABLED(CONFIG_XIAORD_BG_USER_DEFINED) &&                               \
-    defined(XIAORD_LOCAL_USER_DEFINED_AVAILABLE)
-extern const lv_image_dsc_t img_user_defined;
-#define STATUS_BACKGROUND_IMAGE (&img_user_defined)
+    defined(XIAORD_LOCAL_BG_USER_DEFINED_AVAILABLE)
+extern const lv_image_dsc_t img_bg_user_defined;
+#define STATUS_BACKGROUND_IMAGE (&img_bg_user_defined)
 #elif IS_ENABLED(CONFIG_XIAORD_BG_USER_DEFINED)
 extern const lv_image_dsc_t img_bg_1;
 #define STATUS_BACKGROUND_IMAGE (&img_bg_1)
