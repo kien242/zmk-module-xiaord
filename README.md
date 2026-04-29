@@ -669,3 +669,5 @@ Both processors are defined in `boards/shields/xiaord/zmk_behaviors.dtsi`. `virt
 - Font color options other than white
 - Battery management UI for the XIAO Round Display itself
 
+
+LV_SYMBOL_CLOSE LV_SYMBOL_USB LV_SYMBOL_OK LV_SYMBOL_BLUETOOTH  LV_SYMBOL_SETTINGS  LV_SYMBOL_WARNING

@@ -40,5 +40,6 @@ endif()
 add_subdirectory(listeners)
 add_subdirectory(ui)
 add_subdirectory(pages)
+add_subdirectory(fonts)
 
 zephyr_library_sources(status_screen.c)
